@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>60天成交變現系統｜西卡嘉嘉團隊</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans TC',sans-serif; background:#fff; overflow-x:hidden; }
+
+#login-screen {
+  position:fixed; inset:0; z-index:9999;
+  background:linear-gradient(160deg,#FFE066 0%,#FF9A3C 35%,#FF6B9D 65%,#C56CF0 100%);
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px;
+}
+.login-shape { position:absolute; border-radius:50%; opacity:0.18; pointer-events:none; animation:floatShape 6s ease-in-out infinite; }
+@keyframes floatShape { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-20px) rotate(180deg)} }
+.login-box { background:rgba(255,255,255,0.92); border-radius:36px; padding:44px 36px 36px; text-align:center; max-width:340px; width:88%; box-shadow:0 20px 60px rgba(0,0,0,0.18); position:relative; z-index:2; }
+.login-emojis { font-size:44px; margin-bottom:10px; animation:wiggle 2s ease-in-out infinite; }
+@keyframes wiggle { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+.login-title { font-family:'Fredoka One',cursive; font-size:24px; color:#FF6B9D; letter-spacing:1px; margin-bottom:2px; }
+.login-title span { color:#FF9A3C; }
+.login-sub { font-size:10px; color:#aaa; letter-spacing:3px; margin-bottom:24px; font-weight:700; }
+.login-input { width:100%; padding:14px 18px; background:#FFF9F0; border:2.5px solid #FFD166; border-radius:16px; color:#333; font-size:16px; font-family:'Noto Sans TC',sans-serif; text-align:center; letter-spacing:4px; outline:none; transition:border-color 0.2s,box-shadow 0.2s; margin-bottom:14px; }
+.login-input:focus { border-color:#FF9A3C; box-shadow:0 0 0 4px rgba(255,154,60,0.15); }
+.login-input::placeholder { color:#ccc; letter-spacing:2px; font-size:12px; }
+.login-btn { width:100%; padding:15px; background:linear-gradient(135deg,#FF9A3C,#FF6B9D); border:none; border-radius:16px; font-family:'Fredoka One',cursive; font-size:18px; color:white; cursor:pointer; letter-spacing:2px; box-shadow:0 6px 20px rgba(255,107,157,0.4); transition:transform 0.15s,box-shadow 0.15s; }
+.login-btn:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(255,107,157,0.5); }
+.login-err { font-size:11px; color:#FF4757; letter-spacing:1px; margin-top:10px; min-height:18px; font-weight:700; }
+.login-shake { animation:shake 0.4s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+.login-footer { font-size:10px; color:rgba(255,255,255,0.75); letter-spacing:3px; font-weight:700; position:relative; z-index:2; }
+
+#main-map { display:none; }
+
+.map-canvas { width:100%; min-height:100vh; background:linear-gradient(180deg,#87CEEB 0%,#B0E0FF 18%,#C8F0C8 40%,#A8E6A8 58%,#7DCE7D 75%,#5BB85B 100%); position:relative; padding-bottom:80px; }
+
+.cloud { position:absolute; background:white; border-radius:50px; box-shadow:0 4px 15px rgba(255,255,255,0.8); }
+
+.header-banner { position:relative; z-index:10; text-align:center; padding:40px 20px 28px; }
+.header-banner::before { content:'🌈'; position:absolute; top:20px; left:5%; font-size:40px; animation:rainbow 3s ease-in-out infinite; }
+.header-banner::after { content:'☀️'; position:absolute; top:15px; right:5%; font-size:44px; animation:spin 8s linear infinite; }
+@keyframes rainbow { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.banner-tag { display:inline-block; background:linear-gradient(135deg,#FF6B9D,#FF9A3C); color:white; font-family:'Fredoka One',cursive; font-size:11px; letter-spacing:3px; padding:5px 20px; border-radius:30px; margin-bottom:12px; box-shadow:0 4px 14px rgba(255,107,157,0.4); text-transform:uppercase; }
+.main-title { font-family:'Fredoka One',cursive; font-size:clamp(32px,8vw,68px); color:#FF5252; text-shadow:3px 3px 0 #FFB347,6px 6px 0 rgba(255,179,71,0.3); letter-spacing:2px; line-height:1.1; margin-bottom:8px; }
+.main-sub { font-size:13px; color:#2E7D32; font-weight:900; letter-spacing:3px; background:rgba(255,255,255,0.7); display:inline-block; padding:4px 16px; border-radius:20px; }
+
+.prog-wrap { max-width:520px; margin:18px auto 0; background:rgba(255,255,255,0.6); border-radius:30px; padding:12px 18px; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+.prog-bar-bg { background:rgba(0,0,0,0.08); border-radius:20px; height:16px; overflow:hidden; margin-bottom:6px; border:2px solid rgba(255,255,255,0.8); }
+.prog-bar-fill { height:100%; background:linear-gradient(90deg,#FFD166,#FF6B9D,#C56CF0); border-radius:20px; transition:width 0.5s ease; }
+.prog-label { font-size:11px; font-weight:900; color:#555; letter-spacing:1px; text-align:center; }
+
+.path-container { position:relative; max-width:840px; margin:0 auto; padding:10px 20px 0; z-index:5; }
+.road { position:absolute; left:50%; transform:translateX(-50%); width:56px; top:0; bottom:0; z-index:2; background:repeating-linear-gradient(180deg,#F5DEB3 0px,#F5DEB3 20px,#E8C97A 20px,#E8C97A 22px); border-left:4px solid #D4A853; border-right:4px solid #D4A853; }
+
+.start-wrap { display:flex; justify-content:center; position:relative; z-index:10; padding-top:16px; }
+.start-node { background:linear-gradient(135deg,#FFE066,#FFB347); border:5px solid white; border-radius:50%; width:120px; height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 0 0 5px #FFB347,0 10px 30px rgba(255,179,71,0.6); animation:floatStart 2.5s ease-in-out infinite; }
+@keyframes floatStart { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-10px) rotate(3deg)} }
+.start-emoji { font-size:32px; }
+.start-txt { font-family:'Fredoka One',cursive; font-size:16px; color:#5A2000; letter-spacing:1px; line-height:1.1; text-align:center; }
+
+.step-conn { display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 0; position:relative; z-index:10; }
+.step-conn span { display:block; border-radius:50%; }
+.step-conn span:nth-child(1){width:10px;height:10px;background:#FFD166;}
+.step-conn span:nth-child(2){width:8px;height:8px;background:#FF9A3C;}
+.step-conn span:nth-child(3){width:10px;height:10px;background:#FF6B9D;}
+.step-conn span:nth-child(4){width:8px;height:8px;background:#C56CF0;}
+
+.zone-wrap { position:relative; z-index:10; display:flex; }
+.zone-wrap.left  { justify-content:flex-start; }
+.zone-wrap.right { justify-content:flex-end; }
+
+.zone-card { width:350px; border-radius:28px; padding:22px 22px; position:relative; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.12); border:4px solid white; }
+.w1 { background:linear-gradient(135deg,#FFFDE7,#FFF9C4); border-color:#FFD54F; }
+.w1 .zone-badge{background:linear-gradient(135deg,#FFD54F,#FFB300);color:#5A3A00;}
+.w1 .zone-num{background:#FFB300;color:white;}
+.w1::before{content:'🌟';position:absolute;top:10px;right:14px;font-size:28px;opacity:0.25;}
+.w2{background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-color:#FF8A65;}
+.w2 .zone-badge{background:linear-gradient(135deg,#FF8A65,#F4511E);color:white;}
+.w2 .zone-num{background:#F4511E;color:white;}
+.w2::before{content:'🎢';position:absolute;top:10px;right:14px;font-size:28px;opacity:0.25;}
+.w3{background:linear-gradient(135deg,#FCE4EC,#F8BBD0);border-color:#F48FB1;}
+.w3 .zone-badge{background:linear-gradient(135deg,#F48FB1,#E91E8C);color:white;}
+.w3 .zone-num{background:#E91E8C;color:white;}
+.w3::before{content:'🎠';position:absolute;top:10px;right:14px;font-size:28px;opacity:0.25;}
+.w4{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-color:#81C784;}
+.w4 .zone-badge{background:linear-gradient(135deg,#81C784,#388E3C);color:white;}
+.w4 .zone-num{background:#388E3C;color:white;}
+.w4::before{content:'🎯';position:absolute;top:10px;right:14px;font-size:28px;opacity:0.25;}
+
+.zone-badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 14px;font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;box-shadow:0 3px 10px rgba(0,0,0,0.1);}
+.zone-title{font-family:'Fredoka One',cursive;font-size:22px;color:#1A0A00;margin-bottom:6px;letter-spacing:1px;}
+.stamp-hint{font-size:9px;color:#aaa;letter-spacing:1px;margin-bottom:10px;font-style:italic;}
+.zone-items{display:flex;flex-direction:column;gap:7px;}
+
+.zone-item{display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,0.75);border-radius:12px;padding:9px 11px;position:relative;cursor:pointer;transition:all 0.18s;user-select:none;border:2px solid transparent;}
+.zone-item:hover{background:rgba(255,255,255,0.95);transform:scale(1.02);}
+.zone-item.stamped{background:rgba(255,255,255,0.45);}
+.zone-num{min-width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+.zone-item-text{font-size:12.5px;font-weight:700;color:#1A0A00;line-height:1.45;}
+.zone-item-sub{font-size:10.5px;font-weight:500;color:#666;margin-top:1px;}
+.stamp-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:12px;pointer-events:none;opacity:0;transition:opacity 0.3s;background:rgba(255,255,255,0.35);}
+.zone-item.stamped .stamp-overlay{opacity:1;}
+.stamp-img{font-size:40px;transform:rotate(-12deg);filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));}
+.zone-item.stamped .stamp-img{animation:stampPop 0.4s ease;}
+@keyframes stampPop{0%{transform:rotate(-12deg) scale(2.5);opacity:0}60%{transform:rotate(-12deg) scale(0.9)}100%{transform:rotate(-12deg) scale(1);opacity:1}}
+.zone-item.stamped .zone-item-text{text-decoration:line-through;color:#aaa;}
+.zone-item.stamped .zone-item-sub{color:#bbb;}
+
+.grass-strip{width:100%;padding:10px 0;text-align:center;background:linear-gradient(180deg,#66BB6A,#388E3C);font-size:20px;letter-spacing:5px;overflow:hidden;position:relative;z-index:5;}
+.section-label{text-align:center;padding:20px 0 14px;position:relative;z-index:10;}
+.section-label-inner{display:inline-block;background:linear-gradient(135deg,#FFD700,#FF8F00);color:#1A0A00;font-family:'Fredoka One',cursive;font-size:14px;letter-spacing:3px;padding:10px 30px;border-radius:40px;border:4px solid white;box-shadow:0 6px 20px rgba(255,143,0,0.45);}
+
+.final-outer{padding:0 16px;position:relative;z-index:10;}
+.final-wrap{max-width:720px;margin:0 auto;}
+.final-castle{background:linear-gradient(160deg,#7C4DFF 0%,#448AFF 50%,#00BCD4 100%);border-radius:32px;padding:30px 26px 26px;color:white;position:relative;overflow:hidden;border:5px solid white;box-shadow:0 0 0 4px #7C4DFF,0 14px 50px rgba(124,77,255,0.4);}
+.star{position:absolute;font-size:16px;opacity:0.2;animation:twinkle 2s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.2;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
+.castle-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:5px 16px;font-size:10px;font-weight:900;letter-spacing:2px;color:white;margin-bottom:10px;margin-top:4px;}
+.castle-title{font-family:'Fredoka One',cursive;font-size:28px;letter-spacing:2px;margin-bottom:4px;}
+.castle-sub{font-size:11px;opacity:0.8;letter-spacing:3px;margin-bottom:20px;}
+.tl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+.tl-card{background:rgba(255,255,255,0.15);border-radius:16px;padding:12px 14px;border:2px solid rgba(255,255,255,0.3);cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.tl-card:hover{background:rgba(255,255,255,0.25);transform:translateY(-2px);}
+.tl-card.stamped{opacity:0.65;}
+.tl-card.stamped .tl-text{text-decoration:line-through;opacity:0.5;}
+.tl-day{font-size:9px;font-weight:900;letter-spacing:2px;color:#FFD700;margin-bottom:4px;text-transform:uppercase;}
+.tl-text{font-size:12.5px;font-weight:700;line-height:1.4;color:white;}
+.tl-stamp{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:30px;opacity:0;transition:opacity 0.3s;}
+.tl-card.stamped .tl-stamp{opacity:1;animation:stampPop 0.4s ease;}
+.funnel-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:6px;padding:16px 0 6px;border-top:2px solid rgba(255,255,255,0.2);}
+.f-label{font-size:10px;letter-spacing:2px;opacity:0.7;margin-right:6px;font-weight:900;}
+.f-step{display:flex;align-items:center;gap:4px;}
+.f-bubble{background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:900;white-space:nowrap;}
+.f-arrow{font-size:16px;opacity:0.6;}
+.reset-btn{display:block;margin:16px auto 0;padding:8px 24px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.35);border-radius:20px;color:rgba(255,255,255,0.8);font-size:11px;letter-spacing:2px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.2s;}
+.reset-btn:hover{background:rgba(255,255,255,0.28);color:white;}
+
+.end-wrap{display:flex;justify-content:center;padding:16px 0 36px;position:relative;z-index:10;}
+.end-node{background:linear-gradient(135deg,#FFD700,#FF8F00);border-radius:32px;padding:22px 52px;text-align:center;border:5px solid white;box-shadow:0 0 0 4px #FFB347,0 12px 40px rgba(255,143,0,0.55);animation:glowPulse 2s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 4px #FFB347,0 12px 40px rgba(255,143,0,0.55)}50%{box-shadow:0 0 0 10px #FFE566,0 12px 55px rgba(255,143,0,0.75)}}
+.trophy-big{font-size:48px;display:block;margin-bottom:6px;}
+.end-txt{font-family:'Fredoka One',cursive;font-size:22px;color:white;text-shadow:2px 2px 0 rgba(0,0,0,0.15);letter-spacing:1px;}
+.end-sub{font-size:11px;color:rgba(255,255,255,0.9);letter-spacing:3px;font-weight:700;margin-top:4px;}
+
+.ground{width:100%;background:linear-gradient(180deg,#4CAF50,#2E7D32);height:80px;overflow:hidden;position:relative;}
+.ground-scroll{position:absolute;top:10px;white-space:nowrap;animation:groundMove 12s linear infinite;font-size:26px;letter-spacing:5px;}
+@keyframes groundMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.map-footer{background:#1B5E20;color:rgba(255,255,255,0.6);text-align:center;padding:14px;font-size:10px;letter-spacing:3px;font-weight:700;}
+
+.confetti-piece{position:fixed;top:-20px;font-size:24px;z-index:9998;pointer-events:none;animation:confettiFall linear forwards;}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+.complete-badge{display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:200;background:linear-gradient(135deg,#FFD700,#FF8F00);border-radius:24px;padding:14px 28px;text-align:center;box-shadow:0 8px 30px rgba(255,215,0,0.6);border:4px solid white;white-space:nowrap;}
+.complete-badge.show{display:block;animation:badgePop 0.5s ease;}
+@keyframes badgePop{0%{transform:translateX(-50%) scale(0)}60%{transform:translateX(-50%) scale(1.1)}100%{transform:translateX(-50%) scale(1)}}
+.complete-badge-txt{font-family:'Fredoka One',cursive;font-size:16px;color:#1a0a00;}
+
+.deco{position:fixed;pointer-events:none;z-index:1;user-select:none;opacity:0.28;}
+
+@media(max-width:640px){
+  .zone-card{width:90vw;}
+  .zone-wrap.left,.zone-wrap.right{justify-content:center;}
+  .tl-grid{grid-template-columns:1fr;}
+  .f-bubble{font-size:11px;padding:5px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-shape" style="width:200px;height:200px;background:#FF6B9D;top:-60px;left:-60px;animation-delay:0s;animation-duration:5s;"></div>
+  <div class="login-shape" style="width:150px;height:150px;background:#FFD166;bottom:-40px;right:-40px;animation-delay:1s;animation-duration:7s;"></div>
+  <div class="login-shape" style="width:100px;height:100px;background:#C56CF0;top:40%;left:-30px;animation-delay:2s;animation-duration:6s;"></div>
+  <div class="login-box">
+    <div class="login-emojis">🎠🎡🎢</div>
+    <div class="login-title"><span>60</span>天成交變現系統</div>
+    <div class="login-sub">Adventure Map · 限定入場</div>
+    <input class="login-input" id="pw-input" type="password" placeholder="請輸入入場密碼" maxlength="30"/>
+    <button class="login-btn" onclick="checkPassword()">▶ 進入地圖</button>
+    <div class="login-err" id="pw-err"></div>
+  </div>
+  <div class="login-footer">© 西卡嘉嘉團隊限定成員</div>
+</div>
+
+<div id="main-map">
+<div class="deco" style="font-size:36px;top:20%;left:1%;">🌳</div>
+<div class="deco" style="font-size:30px;top:40%;left:1%;">🌲</div>
+<div class="deco" style="font-size:34px;top:60%;left:1%;">🌳</div>
+<div class="deco" style="font-size:32px;top:20%;right:1%;">🌲</div>
+<div class="deco" style="font-size:36px;top:42%;right:1%;">🌳</div>
+<div class="deco" style="font-size:30px;top:62%;right:1%;">🌲</div>
+
+<div class="map-canvas">
+  <div class="cloud" style="top:3%;left:3%;width:130px;height:40px;"></div>
+  <div class="cloud" style="top:1%;left:8%;width:80px;height:28px;"></div>
+  <div class="cloud" style="top:6%;right:6%;width:150px;height:45px;"></div>
+  <div class="cloud" style="top:3%;right:14%;width:90px;height:30px;"></div>
+  <div class="cloud" style="top:12%;left:32%;width:100px;height:32px;"></div>
+
+  <div class="header-banner">
+    <div class="banner-tag">🎠 Adventure Map · 西卡嘉嘉團隊限定</div>
+    <div class="main-title">60天成交變現系統</div>
+    <p class="main-sub">🌟 從 0 到成交 · 一關一關向前闖！ 🌟</p>
+    <div class="prog-wrap">
+      <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="prog-label" id="prog-label">已完成 0 / 16 個任務 · 加油！🌈</div>
+    </div>
+  </div>
+
+  <div class="path-container">
+    <div class="road"></div>
+
+    <div class="start-wrap">
+      <div class="start-node">
+        <div class="start-emoji">🚩</div>
+        <div class="start-txt">START<br>起點</div>
+      </div>
+    </div>
+    <div class="step-conn"><span></span><span></span><span></span><span></span></div>
+
+    <!-- WEEK 1 -->
+    <div class="zone-wrap left">
+      <div class="zone-card w1">
+        <div class="zone-badge">⭐ 第一週 · Day 1–7</div>
+        <div class="zone-title">🎡 打造個人舞台</div>
+        <div class="stamp-hint">👆 點擊任務完成蓋章</div>
+        <div class="zone-items">
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">1</div><div><div class="zone-item-text">打造個人版面</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">2</div><div><div class="zone-item-text">認識市場需求</div><div class="zone-item-sub">你是誰 ＋ 你賣給誰</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">3</div><div><div class="zone-item-text">建立個人標籤與定位</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">4</div><div><div class="zone-item-text">找對標帳號模仿學習</div><div class="zone-item-sub">找已成功的人快速複製</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">5</div><div><div class="zone-item-text">相關 App 下載完成</div><div class="zone-item-sub">剪映 及 開拍</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">6</div><div><div class="zone-item-text">每日輸出 5 篇限時動態</div><div class="zone-item-sub">主題：生活</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="step-conn"><span></span><span></span><span></span><span></span></div>
+
+    <!-- WEEK 2 -->
+    <div class="zone-wrap right">
+      <div class="zone-card w2">
+        <div class="zone-badge">🎢 第二週 · Day 8–14</div>
+        <div class="zone-title">🎢 內容爆發衝刺週</div>
+        <div class="stamp-hint">👆 點擊任務完成蓋章</div>
+        <div class="zone-items">
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">7</div><div><div class="zone-item-text">每日發布 8 則限時動態</div><div class="zone-item-sub">主題：五感 ＋ 口播 2 篇</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="step-conn"><span></span><span></span><span></span><span></span></div>
+
+    <!-- WEEK 3 -->
+    <div class="zone-wrap left">
+      <div class="zone-card w3">
+        <div class="zone-badge">🎠 第三週 · Day 15–21</div>
+        <div class="zone-title">🎠 鋪墊登場關卡</div>
+        <div class="stamp-hint">👆 點擊任務完成蓋章</div>
+        <div class="zone-items">
+          <div class="zone-item" onclick="toggleStamp(this)" style="background:rgba(233,30,140,0.1);"><div class="zone-num" style="background:#E91E8C;color:white;font-size:13px;">📸</div><div><div class="zone-item-text">領仙新人鋪墊</div><div class="zone-item-sub">已有 BA 照，準備亮相！</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">8</div><div><div class="zone-item-text">每日發布 8 則限時動態</div><div class="zone-item-sub">主題：五感 ＋ 口播 2 篇</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="step-conn"><span></span><span></span><span></span><span></span></div>
+
+    <!-- WEEK 4 -->
+    <div class="zone-wrap right">
+      <div class="zone-card w4">
+        <div class="zone-badge">🎯 第四週 · Day 22–30</div>
+        <div class="zone-title">🎯 開賣起步大冒險</div>
+        <div class="stamp-hint">👆 點擊任務完成蓋章</div>
+        <div class="zone-items">
+          <div class="zone-item" onclick="toggleStamp(this)" style="background:rgba(56,142,60,0.12);"><div class="zone-num" style="font-size:15px;">🏫</div><div><div class="zone-item-text">Gofight 詩芳開賣起步課</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">9</div><div><div class="zone-item-text">每日主動私訊 5–10 位潛在客戶</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+          <div class="zone-item" onclick="toggleStamp(this)"><div class="zone-num">10</div><div><div class="zone-item-text">獨立剪出一支影片</div></div><div class="stamp-overlay"><div class="stamp-img">✅</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="step-conn"><span></span><span></span><span></span><span></span></div>
+
+  </div>
+
+  <div class="grass-strip">🌿🌻🌼🌸🌺🌻🌿🌼🌸🌺🌻🌿🌼🌸🌺🌻🌿🌼🌸🌺🌻🌿🌼🌸</div>
+
+  <div class="section-label">
+    <div class="section-label-inner">🏰 進入最終大關卡！Day 31–60 🏰</div>
+  </div>
+
+  <div class="final-outer">
+    <div class="final-wrap">
+      <div class="final-castle">
+        <div class="star" style="top:8%;left:5%;animation-delay:0s;">✨</div>
+        <div class="star" style="top:12%;right:8%;animation-delay:0.5s;">⭐</div>
+        <div class="star" style="top:55%;left:3%;animation-delay:1s;">✨</div>
+        <div class="star" style="top:65%;right:5%;animation-delay:1.5s;">⭐</div>
+        <div class="castle-badge">🏰 新人陪跑 · Day 31–60</div>
+        <div class="castle-title">遊樂園闖關指南 🎡</div>
+        <div class="castle-sub">👆 點擊每個關卡完成蓋章 · 衝向成交！</div>
+        <div class="tl-grid">
+          <div class="tl-card" onclick="toggleTlStamp(this)"><div class="tl-day">📢 Day 31–35</div><div class="tl-text">產品自然曝光</div><div class="tl-stamp">✅</div></div>
+          <div class="tl-card" onclick="toggleTlStamp(this)"><div class="tl-day">💡 Day 36–41</div><div class="tl-text">產品優勢講解與體驗分享（自己的 9S）</div><div class="tl-stamp">✅</div></div>
+          <div class="tl-card" onclick="toggleTlStamp(this)"><div class="tl-day">🤝 Day 42</div><div class="tl-text">產品價值建立與客戶信任鋪陳</div><div class="tl-stamp">✅</div></div>
+          <div class="tl-card" onclick="toggleTlStamp(this)"><div class="tl-day">💰 Day 43–44</div><div class="tl-text">成交轉換技巧</div><div class="tl-stamp">✅</div></div>
+          <div class="tl-card" onclick="toggleTlStamp(this)"><div class="tl-day">🌟 Day 45–52</div><div class="tl-text">產品融入日常情境</div><div class="tl-stamp">✅</div></div>
+          <div class="tl-card" onclick="toggleTlStamp(this)"><div class="tl-day">🛒 Day 53–60</div><div class="tl-text">上架開賣銷售 🎉</div><div class="tl-stamp">✅</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:14px;padding:12px 16px;text-align:center;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:900;letter-spacing:1px;margin-bottom:4px;">⚡ 進階成交，開拓新客戶！</div>
+          <div style="font-size:10px;letter-spacing:2px;opacity:0.75;">這時期的重點是</div>
+        </div>
+        <div class="funnel-row">
+          <span class="f-label">核心路徑：</span>
+          <div class="f-step"><div class="f-bubble">📢 曝光</div><div class="f-arrow">→</div></div>
+          <div class="f-step"><div class="f-bubble">📚 教育</div><div class="f-arrow">→</div></div>
+          <div class="f-step"><div class="f-bubble">🤝 信任</div><div class="f-arrow">→</div></div>
+          <div class="f-step"><div class="f-bubble">💰 成交</div></div>
+        </div>
+        <button class="reset-btn" onclick="resetAll()">🔄 重置所有蓋章</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:center;padding:14px 0;position:relative;z-index:10;gap:6px;">
+    <div style="width:10px;height:10px;background:#FFD700;border-radius:50%;"></div>
+    <div style="width:10px;height:10px;background:#FF9A3C;border-radius:50%;"></div>
+    <div style="width:10px;height:10px;background:#FF6B9D;border-radius:50%;"></div>
+  </div>
+
+  <div class="end-wrap">
+    <div class="end-node">
+      <span class="trophy-big">🏆</span>
+      <div class="end-txt">恭喜完成 60 天！</div>
+      <div class="end-sub">你做到了！繼續放大！🚀</div>
+    </div>
+  </div>
+
+  <div class="ground">
+    <div class="ground-scroll">🌿🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸🌺🌻🌿🌼🌿🌸</div>
+  </div>
+</div>
+
+<div class="map-footer">60天成交變現系統 · 西卡嘉嘉團隊限定成員 · ADVENTURE MAP 🎠</div>
+<div class="complete-badge" id="complete-badge"><div style="font-size:32px;margin-bottom:4px;">🎉🏆🎉</div><div class="complete-badge-txt">全部 16 關完成！你超厲害！</div></div>
+</div>
+
+<script>
+const PASSWORD='money';
+function checkPassword(){
+  const v=document.getElementById('pw-input').value.trim();
+  const e=document.getElementById('pw-err');
+  const b=document.querySelector('.login-box');
+  if(v===PASSWORD){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-map').style.display='block';
+    loadStamps();updateProgress();
+  }else{
+    e.textContent='密碼錯誤，請再試一次 🔐';
+    b.classList.remove('login-shake');void b.offsetWidth;b.classList.add('login-shake');
+    setTimeout(()=>e.textContent='',2500);
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkPassword();});
+
+const TOTAL=16;
+function toggleStamp(el){el.classList.toggle('stamped');saveStamps();updateProgress();if(el.classList.contains('stamped'))burst(6);}
+function toggleTlStamp(el){el.classList.toggle('stamped');saveStamps();updateProgress();if(el.classList.contains('stamped'))burst(6);}
+function burst(n){
+  const p=['🌟','✨','🎊','🎉','⭐','🌈','💫','🎀'];
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.textContent=p[Math.floor(Math.random()*p.length)];
+    el.style.left=Math.random()*100+'vw';
+    el.style.animationDuration=(1+Math.random()*1.2)+'s';
+    el.style.animationDelay=(Math.random()*0.3)+'s';
+    document.body.appendChild(el);
+    el.addEventListener('animationend',()=>el.remove());
+  }
+}
+function updateProgress(){
+  const z=document.querySelectorAll('.zone-item.stamped').length;
+  const t=document.querySelectorAll('.tl-card.stamped').length;
+  const done=z+t;const pct=Math.round(done/TOTAL*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const em=['加油！🌈','繼續！💪','很棒！⭐','快了！🔥','超強！🏆'];
+  document.getElementById('prog-label').textContent=`已完成 ${done} / ${TOTAL} 個任務（${pct}%）· ${em[Math.min(Math.floor(done/TOTAL*5),4)]}`;
+  const badge=document.getElementById('complete-badge');
+  if(done===TOTAL){badge.classList.add('show');burst(40);}
+  else{badge.classList.remove('show');}
+}
+function saveStamps(){
+  localStorage.setItem('sz',JSON.stringify([...document.querySelectorAll('.zone-item')].map(e=>e.classList.contains('stamped'))));
+  localStorage.setItem('st',JSON.stringify([...document.querySelectorAll('.tl-card')].map(e=>e.classList.contains('stamped'))));
+}
+function loadStamps(){
+  try{
+    JSON.parse(localStorage.getItem('sz')||'[]').forEach((v,i)=>{if(v)document.querySelectorAll('.zone-item')[i]?.classList.add('stamped');});
+    JSON.parse(localStorage.getItem('st')||'[]').forEach((v,i)=>{if(v)document.querySelectorAll('.tl-card')[i]?.classList.add('stamped');});
+  }catch(e){}
+}
+function resetAll(){
+  if(!confirm('確定要重置所有蓋章嗎？'))return;
+  document.querySelectorAll('.zone-item.stamped,.tl-card.stamped').forEach(el=>el.classList.remove('stamped'));
+  localStorage.removeItem('sz');localStorage.removeItem('st');updateProgress();
+}
+</script>
+</body>
+</html>
